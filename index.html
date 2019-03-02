@@ -13,6 +13,9 @@
                 <video autoplay playsinline muted id="webcamloc" width="224" height="224"></video>
               </div>
             </div>
+            <a href="javascript:void(take_snapshot())" id = 'snapshot-a'>
+              <h1 id = "snapshot" >Take Snapshot</h1>
+            </a>
           <div><hr /></div>
             <div id="myresult-box-outer">
             <div id="myresult-box-inner">
@@ -20,10 +23,8 @@
             </div>
           </div>
               <div id="status-div"> <h1 id = "status">loading mobilenetv2...</h1> </div>
-                <a href="javascript:void(take_snapshot())" id = 'snapshot-a'>
-                  <h1 id = "snapshot" >Take Snapshot</h1>
-                </a>
                 <div>
+                  <h1 id = 'time'></h1>
                   <h1 id = 'result'></h1>
                 </div>
         
@@ -166,15 +167,15 @@
                     const img = webcam.capture();
                     to_draw(img);
                     console.log(img);
-                    
-
-                    
                     // Capture the frame from the webcam.
-                    
+                    let d = new Date();
+                    let time1 = d.getTime();
                     const predictions = model.predict(img);
                     // Returns the index with the maximum probability. This number corresponds
                     // to the class the model thinks is the most probable given the input.
-                    
+                    let d2 = new Date();
+                    let time2 = d2.getTime();
+                    document.getElementById('time').innerHTML = '用时:'+String((time2-time1)/1000.0)+'秒'
                     //p = predictions.as1D().argMax();
                     //console.log(predictions.as1D().data())
                     maxpre = predictions.as1D().max();
