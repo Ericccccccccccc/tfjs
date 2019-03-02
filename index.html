@@ -194,7 +194,14 @@
                   //predictedClass.dispose();
                  
                   console.log(classId[0]);
+                
+                  if (Maxpre == 1){
+                    confidence = 'confidence: 1';
+                  }
+                  else
+                  {
                   confidence = 'confidence:'+String(Maxpre)[0]+String(Maxpre)[1]+String(Maxpre)[2]+String(Maxpre)[3];
+                  }
                   document.getElementById('result').innerHTML=labels[classId[0]]+', '+label_chinese[classId[0]]+'\n'+confidence;
                     //let res = model.predict(img)
                    // res = res.as1D().argMax()
