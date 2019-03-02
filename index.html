@@ -1,0 +1,185 @@
+<html>
+    <head>
+        tfjs test!
+    </head>
+    <body>
+            <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@0.15.3/dist/tf.min.js"></script>
+            
+
+          
+            <div class="webcam-box-inner">
+                <video autoplay playsinline muted id="webcamloc" width="224" height="224"></video>
+              </div>
+              <canvas width=224 height=224 id="myresult"></canvas>
+        
+            <script language="JavaScript">
+                class Webcam {
+  /**
+   * @param {HTMLVideoElement} webcamElement A HTMLVideoElement representing the webcam feed.
+   */
+  constructor(webcamElement) {
+    this.webcamElement = webcamElement;
+  }
+
+  /**
+   * Captures a frame from the webcam and normalizes it between -1 and 1.
+   * Returns a batched image (1-element batch) of shape [1, w, h, c].
+   */
+  capture() {
+    return tf.tidy(() => {
+      // Reads the image as a Tensor from the webcam <video> element.
+      const webcamImage = tf.browser.fromPixels(this.webcamElement);
+
+      // Crop the image so we're using the center square of the rectangular
+      // webcam.
+      const croppedImage = this.cropImage(webcamImage);
+
+      // Expand the outer most dimension so we have a batch size of 1.
+      const batchedImage = croppedImage.expandDims(0);
+
+      // Normalize the image between -1 and 1. The image comes in between 0-255,
+      // so we divide by 127 and subtract 1.
+      return batchedImage.toFloat().div(tf.scalar(127)).sub(tf.scalar(1));
+    });
+  }
+
+  /**
+   * Crops an image tensor so we get a square image with no white space.
+   * @param {Tensor4D} img An input image Tensor to crop.
+   */
+  cropImage(img) {
+    const size = Math.min(img.shape[0], img.shape[1]);
+    const centerHeight = img.shape[0] / 2;
+    const beginHeight = centerHeight - (size / 2);
+    const centerWidth = img.shape[1] / 2;
+    const beginWidth = centerWidth - (size / 2);
+    return img.slice([beginHeight, beginWidth, 0], [size, size, 3]);
+  }
+
+  /**
+   * Adjusts the video size so we can make a centered square crop without
+   * including whitespace.
+   * @param {number} width The real width of the video element.
+   * @param {number} height The real height of the video element.
+   */
+  adjustVideoSize(width, height) {
+    const aspectRatio = width / height;
+    if (width >= height) {
+      this.webcamElement.width = aspectRatio * this.webcamElement.height;
+    } else if (width < height) {
+      this.webcamElement.height = this.webcamElement.width / aspectRatio;
+    }
+  }
+
+  async setup() {
+    return new Promise((resolve, reject) => {
+      const navigatorAny = navigator;
+      navigator.getUserMedia = navigator.getUserMedia ||
+          navigatorAny.webkitGetUserMedia || navigatorAny.mozGetUserMedia ||
+          navigatorAny.msGetUserMedia;
+      if (navigator.getUserMedia) {
+        navigator.getUserMedia(
+            {video: true},
+            stream => {
+              this.webcamElement.srcObject = stream;
+              this.webcamElement.addEventListener('loadeddata', async () => {
+                this.adjustVideoSize(
+                    this.webcamElement.videoWidth,
+                    this.webcamElement.videoHeight);
+                resolve();
+              }, false);
+            },
+            error => {
+              reject();
+            });
+      } else {
+        reject();
+      }
+    });
+  }
+}
+            let model;
+                const webcam = new Webcam(document.getElementById('webcamloc'));
+           
+        
+        
+            async function loadMobileNetv2() {
+                const mobilenet = await tf.loadLayersModel(
+                    'https://raw.githubusercontent.com/Ericccccccccccc/tfjs/master/model.json');
+                alert('load done!')
+                // Return a model that outputs an internal activation.
+                return mobilenet
+                }
+                async function init() {
+                    // Warm up the model. This uploads weights to the GPU and compiles the WebGL
+                    // programs so the first time we collect data from the webcam it will be
+                    // quick.
+                    try {
+                        await webcam.setup();
+                    } catch (e) {
+                        document.getElementById('no-webcam').style.display = 'block';
+                    }
+                 model = await loadMobileNetv2();
+                  
+                }
+                init();
+
+                function draw(image, canvas) {
+                const [width, height] = [224, 224];
+                const ctx = canvas.getContext('2d');
+                const imageData = new ImageData(width, height);
+                const data = image.dataSync();
+                for (let i = 0; i < height * width; ++i) {
+                  const j = i * 4;
+                  imageData.data[j + 0] = (data[i * 3 + 0] + 1) * 127;
+                  imageData.data[j + 1] = (data[i * 3 + 1] + 1) * 127;
+                  imageData.data[j + 2] = (data[i * 3 + 2] + 1) * 127;
+                  imageData.data[j + 3] = 255;
+                }
+                ctx.putImageData(imageData, 0, 0);
+              }
+              function to_draw(img) {
+                  const thumbCanvas = document.getElementById('myresult');
+                  draw(img, thumbCanvas);
+                }
+                async function take_snapshot(){
+                    const img = webcam.capture();
+                    to_draw(img);
+                    console.log(img);
+
+                    const predictedClass = tf.tidy(() => {
+                    // Capture the frame from the webcam.
+                    const img = webcam.capture();
+                    const predictions = model.predict(img);
+                    // Returns the index with the maximum probability. This number corresponds
+                    // to the class the model thinks is the most probable given the input.
+                    
+                    p = predictions.as1D().argMax();
+                    console.log(predictions.as1D().data())
+                    
+                    return p;
+                  });
+                  const classId = await (predictedClass.data());
+                  //predictedClass.dispose();
+                  labels = ['daisy','dandelion','rose','sunflower','tulip']
+                  label_chinese = ['雏菊','蒲公英','玫瑰','向日葵','郁金香']
+                  console.log(classId[0]);
+                  document.getElementById('result').innerHTML=labels[classId[0]]+', '+label_chinese[classId[0]]
+                    //let res = model.predict(img)
+                   // res = res.as1D().argMax()
+
+                   // console.log(res)
+              }
+
+              
+               
+
+        </script>
+
+<a href="javascript:void(take_snapshot())">Take Snapshot</a>
+<div>
+  <h1 id = 'result'></h1>
+</div>
+        
+    </body>
+</html>
