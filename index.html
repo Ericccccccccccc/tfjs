@@ -1,16 +1,29 @@
 <html>
     <head>
-        tfjs test!
+        <h1 class ="main-title" style="text-align:center">tfjs test!</h1>
     </head>
     <body>
+        
             <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@0.15.3/dist/tf.min.js"></script>
-            
-
-          
+           
+  <link rel="stylesheet" href="style.css">
+          <div class = "webcam-box-outer">
             <div class="webcam-box-inner">
                 <video autoplay playsinline muted id="webcamloc" width="224" height="224"></video>
               </div>
+            </div>
+            <div id="myresult-box-outer">
+            <div id="myresult-box-inner">
               <canvas width=224 height=224 id="myresult"></canvas>
+            </div>
+          </div>
+              <div id="status-div"> <h1 id = "status">loading mobilenetv2...</h1> </div>
+                <a href="javascript:void(take_snapshot())" id = 'snapshot-a'>
+                  <h1 id = "snapshot" >Take Snapshot</h1>
+                </a>
+                <div>
+                  <h1 id = 'result'></h1>
+                </div>
         
             <script language="JavaScript">
                 class Webcam {
@@ -100,8 +113,10 @@
 }
             let model;
                 const webcam = new Webcam(document.getElementById('webcamloc'));
-           
-        
+                const statusElement = document.getElementById('status');
+                const snapshotelement = document.getElementById('snapshot');
+                snapshotelement.style.visibility = 'hidden';
+               
         
             async function loadMobileNetv2() {
                 const mobilenet = await tf.loadLayersModel(
@@ -120,6 +135,8 @@
                         document.getElementById('no-webcam').style.display = 'block';
                     }
                  model = await loadMobileNetv2();
+                 document.getElementById('status').innerHTML = 'Loading Done!'
+                 snapshotelement.style.visibility = 'visible';
                   
                 }
                 init();
@@ -190,10 +207,6 @@
 
         </script>
 
-<a href="javascript:void(take_snapshot())">Take Snapshot</a>
-<div>
-  <h1 id = 'result'></h1>
-</div>
         
     </body>
 </html>
