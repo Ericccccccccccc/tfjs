@@ -142,33 +142,47 @@
                   const thumbCanvas = document.getElementById('myresult');
                   draw(img, thumbCanvas);
                 }
+
                 async function take_snapshot(){
                     const img = webcam.capture();
                     to_draw(img);
                     console.log(img);
+                    
 
-                    const predictedClass = tf.tidy(() => {
+                    
                     // Capture the frame from the webcam.
-                    const img = webcam.capture();
+                    
                     const predictions = model.predict(img);
                     // Returns the index with the maximum probability. This number corresponds
                     // to the class the model thinks is the most probable given the input.
                     
+                    //p = predictions.as1D().argMax();
+                    //console.log(predictions.as1D().data())
+                    maxpre = predictions.as1D().max();
                     p = predictions.as1D().argMax();
-                    console.log(predictions.as1D().data())
+                   // console.log(predictions.as1D().data())
                     
-                    return p;
-                  });
-                  const classId = await (predictedClass.data());
+                
+                  const classId = await (p.data());
+                  const Maxpre = await(maxpre.data());
+                  labels = ['daisy','dandelion','rose','sunflower','tulip'];
+                  label_chinese = ['雏菊','蒲公英','玫瑰','向日葵','郁金香'];
+                  console.log(Maxpre[0]);
+                  if (Maxpre[0] < 0.9){
+                    hint = '请对准要识别的植物或者植物不在雏菊,蒲公英,玫瑰,向日葵,郁金香的类别中';
+                    document.getElementById('result').innerHTML=hint;
+                  }
+                  else{
                   //predictedClass.dispose();
-                  labels = ['daisy','dandelion','rose','sunflower','tulip']
-                  label_chinese = ['雏菊','蒲公英','玫瑰','向日葵','郁金香']
+                 
                   console.log(classId[0]);
-                  document.getElementById('result').innerHTML=labels[classId[0]]+', '+label_chinese[classId[0]]
+                  confidence = 'confidence:'+String(Maxpre)[0]+String(Maxpre)[1]+String(Maxpre)[2]+String(Maxpre)[3];
+                  document.getElementById('result').innerHTML=labels[classId[0]]+', '+label_chinese[classId[0]]+'\n'+confidence;
                     //let res = model.predict(img)
                    // res = res.as1D().argMax()
 
                    // console.log(res)
+                  }
               }
 
               
