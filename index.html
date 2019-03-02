@@ -13,6 +13,7 @@
                 <video autoplay playsinline muted id="webcamloc" width="224" height="224"></video>
               </div>
             </div>
+          <div><hr /></div>
             <div id="myresult-box-outer">
             <div id="myresult-box-inner">
               <canvas width=224 height=224 id="myresult"></canvas>
@@ -133,7 +134,7 @@
                     try {
                         await webcam.setup();
                     } catch (e) {
-                        document.getElementById('no-webcam').style.display = 'block';
+                        alert("Failed")
                     }
                  model = await loadMobileNetv2();
                  document.getElementById('status').innerHTML = 'Loading Done!'
